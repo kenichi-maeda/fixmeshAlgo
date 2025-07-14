@@ -1,0 +1,260 @@
+<head>
+  <meta charset="UTF-8">
+  <title>Mesh Repair Algorithm Pseudocode</title>
+
+  <script>
+    window.MathJax = {
+      tex: {
+        displayMath: [['\\[', '\\]']],
+        packages: ['base']
+      },
+      chtml: {
+        displayAlign: 'left',
+        displayIndent: '0em'
+      }
+    };
+  </script>
+
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script id="MathJax-script" async
+          src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+  <style>
+    body {
+      font-family: Georgia, serif;
+      background-color: #f4f4f9;
+      margin: 2em;
+      line-height: 1.6;
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 2em;
+    }
+
+    .algorithm {
+      background: #fff;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 1em 1.5em;
+      margin-bottom: 2em;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+      max-width: 900px;
+      width: 100%;
+      font-size: 0.9em;
+    }
+
+    h2 {
+      background-color: #e9e9e9;
+      padding: 10px;
+      border-radius: 4px;
+      margin-top: 0;
+    }
+
+    .math-display {
+      overflow-x: auto;
+      width: 100%;
+    }
+
+    .notes {
+      margin-top: 1em;
+      font-size: 0.95em;
+      color: #333;
+      background-color: #fefefe;
+      border-left: 4px solid #888;
+      padding: 0.8em 1em;
+    }
+
+    .container {
+      display: flex;
+      justify-content: center;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>Mesh Repair Algorithm Pseudocode</h1>
+
+<div class="container">
+  <div class="algorithm">
+    <h2>1. Merging Neighboring Meshes: Lightweight Approach</h2>
+    <p class="math-display">
+      \[
+      \begin{array}{ll}
+      & \textbf{Require: } \text{Mesh} \\
+      & \textbf{--- Topology Reconstruction Phase ---} \\
+      1. & \text{Triangulate mesh} \\
+      2. & \text{Remove topological singularities} \\
+      3. & \text{If mesh has multiple components:} \\
+      4. & \quad \text{Keep the largest component} \\
+      5. & \quad \text{Discard the rest} \\
+      6. & \text{Patch holes if necessary} \\
+      & \textbf{--- Geometry Correction Phase ---} \\
+      7. & \text{For } k = 0 \text{ to specified iterations:} \\
+      8. & \quad \text{Remove degeneracy} \\
+      9. & \quad \text{Remove self-intersections:} \\
+      10. & \quad \quad \text{Detect self-intersecting triangles } T \\
+      11. & \quad \quad \text{Compute } R \text{, the union of neighborhood of } T \\
+      12. & \quad \quad \text{Remove } R \text{ and patch holes} \\
+      13. & \quad \text{If no degeneracy or intersections: terminate} \\
+      14. & \textbf{Return: } \text{Repaired mesh}
+      \end{array}
+      \]
+    </p>
+    <div class="notes">
+      <strong>Note:</strong> Used in PyMeshFix.
+    </div>
+  </div>
+</div>
+
+
+<div class="container">
+  <div class="algorithm">
+    <h2>2. Merging Neighboring Meshes: Typical Subdividing Method</h2>
+    <p class="math-display">
+      \[
+      \begin{array}{ll}
+      & \textbf{Require: } M = (V, F), \text{ where } V \text{ is the set of vertices and } F \text{ is the set of faces} \\
+      & \\
+      1. & \text{Detect intersecting face pairs:} \\
+      2. & \quad I = \{(F_i, F_j) \mid F_i, F_j \in F, \, i \neq j \} \\
+      & \\
+      3. & \text{For each intersecting pair } (F_i, F_j) \in I: \\
+      4. & \quad \text{Compute the intersection points } P_k \text{ such that } F_i \text{ intersects } F_j \\
+      5. & \quad \text{Insert } P_k \text{ into the mesh by subdividing the intersecting triangles:} \\
+      6. & \qquad V \leftarrow V \cup \{P_k\}, \quad F \leftarrow \text{subdivide}(F, P_k) \\
+      & \\
+      7. & \text{Remove vertices that are not referenced in } F \\
+      8. & \text{Optionally, apply numerical adjustments to refine the mesh} \\
+      & \\
+      9. & \textbf{Return: } \text{Repaired mesh}
+      \end{array}
+      \]
+    </p>
+    <div class="notes">
+      <strong>Note:</strong> Used in PyMesh.
+    </div>
+  </div>
+</div>
+
+
+
+<div class="container">
+  <div class="algorithm">
+    <h2>3. Merging Neighboring Meshes: Local Remesh</h2>
+    <p class="math-display">
+      \[
+      \begin{array}{ll}
+      & \textbf{Require: } M = (V, F), \text{ where } V \text{ is the set of vertices and } F \text{ is the set of faces} \\
+      & \\
+      1. & \text{Detect self-intersections} \\
+      2. & \text{Subdivide intersecting facets to resolve self-intersections} \\
+      & \\
+      3. & \text{Compute the outer hull of the mesh:} \\
+      4. & \quad M_{\text{outer}} = (V_{\text{outer}}, F_{\text{outer}}) \\
+      & \\
+      5. & \text{Find vertices } V_{\text{mapped}} \text{ in } M_{\text{outer}} \text{ that were previously in intersecting areas of } M \\
+      & \\
+      6. & \text{Extract intersecting regions as a submesh:} \\
+      7. & \quad M_{\text{sub}} = (V_{\text{sub}}, F_{\text{sub}}), \quad M_{\text{remaining}} = (V_{\text{rem}}, F_{\text{rem}}) \\
+      8. & \text{where } M_{\text{sub}} \text{ corresponds to intersecting regions and } M_{\text{remaining}} \text{ to the rest.} \\
+      9. & V_{\text{sub}} = V_{\text{mapped}} \\
+      & \\
+      10. & \text{Separate } M_{\text{sub}} \text{ into disconnected components:} \\
+      11. & \quad \text{components} = \{ M_{\text{sub}}^1, M_{\text{sub}}^2, \dots, M_{\text{sub}}^k \} \\
+      & \\
+      12. & \text{For each component } M_{\text{sub}}^i = (V^i, F^i): \\
+      13. & \quad \text{Iteratively remesh until the number of vertices stabilizes:} \\
+      14. & \quad \quad \text{- Collapse short edges below a threshold} \\
+      15. & \quad \quad \text{- Collapse long edges exceeding a target length} \\
+      16. & \quad \quad \text{- Remove obtuse triangles with large interior angles} \\
+      & \\
+      17. & \text{Merge remeshed components:} \\
+      18. & \quad M_{\text{repaired\_sub}} = \bigcup_{i=1}^k M_{\text{sub}}^i \\
+      & \\
+      19. & \text{Align the boundary of } M_{\text{repaired\_sub}} \text{ to } M_{\text{remaining}} \\
+      & \\
+      20. & \text{Replace the submesh in the original mesh:} \\
+      21. & \quad M_{\text{repaired}} = M_{\text{remaining}} \cup M_{\text{aligned}} \\
+      & \\
+      22. & \textbf{Return: } \text{Repaired mesh}
+      \end{array}
+      \]
+    </p>
+    <div class="notes">
+      <strong>Note:</strong> Step 2 in Algorithm 3 follows the procedure of Algorithm 2.
+    </div>
+  </div>
+</div>
+
+
+
+<div class="container">
+  <div class="algorithm">
+    <h2>4. Detaching Neighboring Meshes</h2>
+    <p class="math-display">
+      \[
+      \begin{array}{ll}
+      & \textbf{Require: } \text{Mesh} \\
+      1. & \text{Count the number of submeshes in the input mesh (only keep watertight ones)} \\
+      2. & \text{Detect and remove all self-intersecting faces in the mesh} \\
+      3. & \text{Form a new mesh using only non-intersecting faces} \\
+      4. & \text{Split the new mesh into disconnected submeshes} \\
+      5. & \text{Keep only submeshes that were identified at Step 1} \\
+      6. & \text{For each remaining submesh: patch holes} \\
+      7. & \text{Combine all repaired submeshes into a single mesh} \\
+      8. & \textbf{Return: } \text{Repaired mesh}
+      \end{array}
+      \]
+    </p>
+  </div>
+</div>
+
+
+<div class="container">
+  <div class="algorithm">
+    <h2>5. Detaching Enclosed Meshes</h2>
+    <p class="math-display">
+      \[
+      \begin{array}{ll}
+      & \textbf{Require: } \text{Mesh}, \texttt{contact_threshold} \\
+      1. & \text{Split the input mesh into submeshes (keep only watertight ones)} \\
+      2. & \text{Sort submeshes by volume:} \\
+      3. & \quad \text{Assign smallest-volume mesh as } \texttt{inner} \\
+      4. & \quad \text{Assign largest-volume mesh as } \texttt{outer} \\
+      5. & \text{Sample the outer mesh into a point cloud} \\
+      6. & \text{Build a spatial search tree} \\
+      7. & \text{Compute the centroid of the inner mesh} \\
+      8. & \text{For iteration = 1 to } \texttt{max_iters} \text{:} \\
+      9. & \quad \text{Set } \texttt{changed_any} \leftarrow \textbf{False} \\
+      10. & \quad \text{For each vertex } v \text{ in inner mesh:} \\
+      11. & \qquad \text{Check if } v \text{ is inside the outer mesh} \\
+      12. & \qquad \text{Find nearest point to } v \text{ in the outer point cloud} \\
+      13. & \qquad \text{Compute and normalize direction vector from } v \text{ to inner centroid} \\
+      14. & \qquad \text{Compute distance } d \text{ to nearest surface point} \\
+      15. & \qquad \textbf{If } v \text{ is outside the outer mesh:} \\
+      16. & \qquad \quad \text{offset } \leftarrow d + \texttt{contact_threshold} \\
+      17. & \qquad \quad \text{Move } v \text{ inward by offset along the direction} \\
+      18. & \qquad \quad \texttt{changed_any} \leftarrow \textbf{True} \\
+      19. & \qquad \quad \textbf{continue} \text{ to next vertex} \\
+      20. & \qquad \textbf{Else if } v \text{ is inside and } d < \texttt{contact_threshold} \\
+      21. & \qquad \quad \text{offset } \leftarrow \texttt{contact_threshold} - d \\
+      22. & \qquad \quad \text{Move } v \text{ inward by offset along the direction} \\
+      23. & \qquad \quad \texttt{changed_any} \leftarrow \textbf{True} \\
+      24. & \quad \textbf{If } \texttt{changed_any} \text{ is False:} \\
+      25. & \quad \quad \textbf{break} \\
+      26. & \text{Combine the inner and outer mesh} \\
+      27. & \textbf{Return: } \text{Combined mesh}
+      \end{array}
+      \]
+    </p>
+  </div>
+</div>
+
+
+
+
+</body>
+</html>
